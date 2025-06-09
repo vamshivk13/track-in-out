@@ -29,15 +29,21 @@ export default function Home() {
     selected && selected?.toLocaleString("default", { weekday: "long" });
   const day = selected?.getDate();
   const year = selected?.getFullYear();
+  const [isEnteredIn, setIsEnteredIn] = useState(false);
+  const [isExited, setIsExited] = useState(false);
 
-  const isEnteredIn = false;
+  function handleEntryExitReset() {
+    setIsEnteredIn(false);
+    setIsExited(false);
+  }
+
   return (
-    <div className="flex gap-4 py-10 flex-col md:flex-row sm:flex-col md:h-[100%] h-[calc(100%-30px)]  ">
+    <div className="flex gap-4 py-3 md:py-8 flex-col md:flex-row sm:flex-col md:h-[100%] h-[calc(100%-60px)] px-0 md:px-3">
       <Calendar
         mode="single"
         selected={selected}
         onSelect={setSelected}
-        className={"self-center md:self-baseline min-h-[300px]"}
+        className={"self-center md:self-baseline"}
       ></Calendar>
       <Card className={"md:h-[calc(100%-30px)] mx-5 flex-1"}>
         <CardHeader>
@@ -51,8 +57,14 @@ export default function Home() {
         <CardAction className={"w-full"}>
           <ul className="flex gap-2 px-4 items-center">
             <li className="flex-1">
-              {isEnteredIn ? (
-                <Button variant="outline">Exit</Button>
+              {!isEnteredIn ? (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={setIsEnteredIn}
+                >
+                  Enter In
+                </Button>
               ) : (
                 <div className="border my-auto rounded-2xl p-3  flex flex-col md:flex-row gap-3 md:justify-between ">
                   <Badge
@@ -77,29 +89,44 @@ export default function Home() {
             <StaticTimePicker defaultValue={dayjs('2022-04-17T15:30')} />
             </LocalizationProvider>
               </li> */}
-            <li className="flex-1">
-              {isEnteredIn ? (
-                <Button variant="outline">Exit</Button>
-              ) : (
-                <div className="border my-auto rounded-2xl p-3  flex flex-col md:flex-row gap-3 md:justify-between ">
-                  <Badge
-                    variant="default"
-                    className="md:w-min w-full text-[1rem]"
+            {isEnteredIn && (
+              <li className="flex-1">
+                {!isExited && (
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={setIsExited}
                   >
-                    Time out
-                  </Badge>
-                  <div className="self-center flex items-center gap-2">
-                    {currentDate.toLocaleTimeString()}
-                    <Button variant={"outlined"} className="size-4">
-                      <Pencil />
-                    </Button>
+                    Exit
+                  </Button>
+                )}
+                {isExited && (
+                  <div className="border my-auto rounded-2xl p-3  flex flex-col md:flex-row gap-3 md:justify-between ">
+                    <Badge
+                      variant="default"
+                      className="md:w-min w-full text-[1rem]"
+                    >
+                      Time out
+                    </Badge>
+                    <div className="self-center flex items-center gap-2">
+                      {currentDate.toLocaleTimeString()}
+                      <Button variant={"outlined"} className="size-4">
+                        <Pencil />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </li>
-            <Button variant={"outlined"} className="size-4">
-              <X />
-            </Button>
+                )}
+              </li>
+            )}
+            {isEnteredIn && (
+              <Button
+                variant={"outlined"}
+                className="size-4"
+                onClick={handleEntryExitReset}
+              >
+                <X />
+              </Button>
+            )}
           </ul>
         </CardAction>
       </Card>
