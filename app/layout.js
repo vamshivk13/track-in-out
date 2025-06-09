@@ -22,15 +22,21 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maxium-scale=1"
+      ></meta>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider  attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange>
-                <Header/>
-            {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children}
         </ThemeProvider>
       </body>
     </html>
