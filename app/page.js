@@ -124,7 +124,7 @@ export default function Home() {
     setWorkedDays((prev) =>
       prev.filter((days) => days.day != selected.toLocaleDateString("en-US"))
     );
-    const id = idTracker[selected.toLocaleDateString("toLocaleString")];
+    const id = idTracker[selected.toLocaleDateString("en-US")];
     const deleteUrl = baseUrl + "/days/" + id + ".json";
     axios.delete(deleteUrl);
   }
