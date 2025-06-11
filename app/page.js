@@ -23,6 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import EditDrawer from "./components/EditDrawer";
 import dayjs from "dayjs";
+import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   const currentDate = new Date();
@@ -49,6 +50,7 @@ export default function Home() {
   const [inDays, setInDays] = useState([]);
   const [isInitalEntiresLoading, setIsInitialEntriesLoading] = useState(true);
   const [progressValue, setProgressValue] = useState(0);
+  const [minDuration, setMinDuration] = useState("06:00");
 
   useEffect(() => {
     // Load all the entries and set the id tracker for each of the date
@@ -86,6 +88,7 @@ export default function Home() {
       getInDaysFromInitialEntires(intialWorkedDays);
       getBookedDaysFromInitialEntires(intialWorkedDays);
       setIsInitialEntriesLoading(false);
+
       console.log("Initial Data", workedDays);
     }
     getInitialEntries();
@@ -102,7 +105,7 @@ export default function Home() {
       const val = getProgressValue(enteredTimeStamp);
       setProgressValue(val);
     }
-  }, [isEnteredIn, enteredTimeStamp]);
+  }, [isEnteredIn, enteredTimeStamp, minDuration]);
 
   function handleEntryExitReset() {
     setIsEnteredIn(false);
@@ -129,6 +132,34 @@ export default function Home() {
     axios.delete(deleteUrl);
   }
 
+  async function handleMarkAsReprted() {
+    if (!isExited) {
+      const curDate = new Date(getTimeStampFromDate(selected));
+      const data = {
+        id: null,
+        day: selected.toLocaleDateString("en-US"),
+        userId: null,
+        status: "EXITED",
+        enteredTimeStamp: null,
+        exitTimeStamp: null,
+        minDuration: "06:00",
+      };
+      setWorkedDays((prev) => [...prev, data]);
+
+      setBookedDays((prev) => [...prev, curDate]);
+      const res = await axios.post(daysEntryUrl, data);
+      setIdTracker((prev) => {
+        return {
+          ...prev,
+          [curDate.toLocaleDateString("en-US")]: res.data.name,
+        };
+      });
+      setIsExited(true);
+    } else {
+      handleEntryExitReset();
+    }
+  }
+
   async function handleEnteredInState() {
     const curDate = new Date(getTimeStampFromDate(selected));
     setEnteredTimeStamp(curDate.toLocaleString("en-US"));
@@ -141,7 +172,7 @@ export default function Home() {
       status: "ENTERED",
       enteredTimeStamp: curDate.toLocaleString("en-US"),
       exitTimeStamp: null,
-      minDuration: null,
+      minDuration: "06:00",
     };
     setWorkedDays((prev) => [...prev, data]);
     setInDays((prev) => [...prev, curDate]);
@@ -202,10 +233,11 @@ export default function Home() {
     const now = new Date();
 
     const diff = (now - new Date(enteredTImeStamp)) / (60 * 1000);
-
-    const val = (diff / (60 * 6)) * 100;
+    const [hr, min] = minDuration.split(":");
+    const val = (diff / (60 * Number(hr) + Number(min))) * 100;
+    const val1 = Math.min(100, Math.max(0, val));
     console.log("DIFFF", diff, val);
-    return val;
+    return val1;
   }
   console.log("workedDays", workedDays);
   console.log("SELECTED", selected);
@@ -219,11 +251,17 @@ export default function Home() {
     const curDayDetails = workedDays.filter(
       (curDay) => curDay.day == date.toLocaleDateString("en-US")
     )[0];
+    console.log("CUR-Details", curDayDetails);
     if (curDayDetails) {
-      setIsEnteredIn(!!curDayDetails.enteredTimeStamp);
-      setIsExited(!!curDayDetails.exitTimeStamp);
+      setIsEnteredIn(
+        curDayDetails.status == "ENTERED" || !!curDayDetails.enteredTimeStamp
+      );
+      setIsExited(
+        curDayDetails.status == "EXITED" || !!curDayDetails.exitTimeStamp
+      );
       setEnteredTimeStamp(curDayDetails.enteredTimeStamp);
       setExitTimeStamp(curDayDetails.exitTimeStamp);
+      setMinDuration(curDayDetails.minDuration);
     } else {
       setIsEnteredIn(false);
       setIsExited(false);
@@ -252,7 +290,7 @@ export default function Home() {
           }
         });
       });
-    } else {
+    } else if (mode == "exit") {
       setExitTimeStamp(time);
       setWorkedDays((entires) => {
         return entires.map((entry) => {
@@ -270,6 +308,25 @@ export default function Home() {
           }
         });
       });
+    } else {
+      console.log("TIme-duration", time);
+      setWorkedDays((entires) => {
+        return entires.map((entry) => {
+          if (entry.day == selected.toLocaleDateString("en-US")) {
+            const data = {
+              ...entry,
+              minDuration: time,
+            };
+            const id = idTracker[selected.toLocaleDateString("en-US")];
+            const patchUrl = baseUrl + "/days/" + id + ".json";
+            axios.put(patchUrl, data);
+            return data;
+          } else {
+            return entry;
+          }
+        });
+      });
+      setMinDuration(time);
     }
     console.log("Edited-time", time, mode);
   }
@@ -281,6 +338,12 @@ export default function Home() {
     const mins = diff % 60;
     const formatted = `${hrs}h ${mins.toString().padStart(2, "0")}m`;
     return formatted;
+  };
+  console.log("IS_EXISTED", isExited);
+  const isBeforeToday = () => {
+    const current = new Date(selected).setHours(0, 0, 0, 0);
+    const today = new Date(currentDate).setHours(0, 0, 0, 0);
+    return current < today;
   };
   if (isInitalEntiresLoading) {
     return (
@@ -320,32 +383,60 @@ export default function Home() {
             <CardContent className={"h-[100%]"}>
               {isEnteredIn && !isExited && (
                 <div className="flex flex-col gap-2">
-                  <p className="text-muted-foreground">
-                    You've successfully checked in, time in: {timeSpent()}
-                  </p>
+                  <div>
+                    <div>You've successfully checked in.</div>
+                    <div className="text-muted-foreground">
+                      Time Spent: {timeSpent()}
+                    </div>
+                    <div className="text-muted-foreground">
+                      <p>
+                        {"Expected:" + " "}
+                        <span>
+                          {minDuration}
+                          <EditDrawer
+                            curDuration={minDuration}
+                            handleEditTimeStamp={handleEditTimeStamp}
+                            mode={"duration"}
+                          ></EditDrawer>
+                        </span>
+                      </p>
+                    </div>
+                  </div>
                   <Progress value={progressValue}></Progress>
                 </div>
               )}
-              {isExited && (
+              {enteredTimeStamp && exitTimeStamp && isExited && (
                 <p className="text-muted-foreground">
                   You are at office today for {timeSpent()}
                 </p>
               )}
               {selected && !isEnteredIn && (
-                <p className="text-muted-foreground">Ready for Work?</p>
+                <p className="text-muted-foreground">
+                  {isBeforeToday()
+                    ? isExited
+                      ? "You are at office today"
+                      : "Already reported on this day? Mark your presence!"
+                    : "Ready for Work?"}
+                </p>
               )}
             </CardContent>
             <CardAction className={"w-full"}>
               <ul className="flex gap-2 px-4 items-center ">
                 <li className="flex-1">
                   {!isEnteredIn ? (
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={handleEnteredInState}
-                    >
-                      Enter In
-                    </Button>
+                    isBeforeToday() ? (
+                      <Button className="w-full" onClick={handleMarkAsReprted}>
+                        {isExited ? "Remove this Entry" : "Mark as Reported"}
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        // variant="outline"
+                        onClick={handleEnteredInState}
+                      >
+                        Enter In
+                      </Button>
+                    )
                   ) : (
                     <div className="border my-auto rounded-2xl p-3  flex flex-col md:flex-row gap-3 md:justify-between ">
                       <Badge
@@ -371,11 +462,7 @@ export default function Home() {
                 {isEnteredIn && (
                   <li className="flex-1">
                     {!isExited && (
-                      <Button
-                        className="w-full"
-                        variant="outline"
-                        onClick={handleExitState}
-                      >
+                      <Button className="w-full" onClick={handleExitState}>
                         Exit
                       </Button>
                     )}
