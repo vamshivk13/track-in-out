@@ -28,9 +28,9 @@ export default function Home() {
   const currentDate = new Date();
   const [selected, setSelected] = useState(currentDate);
   const month =
-    selected && selected?.toLocaleString("default", { month: "long" });
+    selected && selected?.toLocaleString("en-US", { month: "long" });
   const dayOfWeek =
-    selected && selected?.toLocaleString("default", { weekday: "long" });
+    selected && selected?.toLocaleString("en-US", { weekday: "long" });
   const day = selected?.getDate();
   const year = selected?.getFullYear();
 
@@ -109,16 +109,20 @@ export default function Home() {
     setIsExited(false);
     setInDays((prev) =>
       prev.filter(
-        (day) => day.toLocaleDateString() != selected.toLocaleDateString()
+        (day) =>
+          day.toLocaleDateString("en-US") !=
+          selected.toLocaleDateString("en-US")
       )
     );
     setBookedDays((prev) =>
       prev.filter(
-        (day) => day.toLocaleDateString() != selected.toLocaleDateString()
+        (day) =>
+          day.toLocaleDateString("en-US") !=
+          selected.toLocaleDateString("en-US")
       )
     );
     setWorkedDays((prev) =>
-      prev.filter((days) => days.day != selected.toLocaleDateString())
+      prev.filter((days) => days.day != selected.toLocaleDateString("en-US"))
     );
     const id = idTracker[selected.toLocaleDateString()];
     const deleteUrl = baseUrl + "/days/" + id + ".json";
@@ -127,15 +131,15 @@ export default function Home() {
 
   async function handleEnteredInState() {
     const curDate = new Date(getTimeStampFromDate(selected));
-    setEnteredTimeStamp(curDate.toLocaleString());
+    setEnteredTimeStamp(curDate.toLocaleString("en-US"));
     setIsEnteredIn(true);
     // Handle adding an entry to the database
     const data = {
       id: null,
-      day: selected.toLocaleDateString(),
+      day: selected.toLocaleDateString("en-US"),
       userId: null,
       status: "ENTERED",
-      enteredTimeStamp: curDate.toLocaleString(),
+      enteredTimeStamp: curDate.toLocaleString("en-US"),
       exitTimeStamp: null,
       minDuration: null,
     };
@@ -145,7 +149,7 @@ export default function Home() {
     setIdTracker((prev) => {
       return {
         ...prev,
-        [curDate.toLocaleDateString()]: res.data.name,
+        [curDate.toLocaleDateString("en-US")]: res.data.name,
       };
     });
   }
@@ -164,18 +168,17 @@ export default function Home() {
 
   function handleExitState() {
     const curDate = new Date(getTimeStampFromDate(selected));
-    setExitTimeStamp(curDate.toLocaleString());
+    setExitTimeStamp(curDate.toLocaleString("en-US"));
     setIsExited(true);
     setWorkedDays((prev) => {
       return prev.map((curDay) => {
-        console.log("LcoalDate", curDate.toLocaleDateString());
-        if (curDay.day == curDate.toLocaleDateString()) {
+        if (curDay.day == curDate.toLocaleDateString("en-US")) {
           let data = {
             ...curDay,
-            exitTimeStamp: curDate.toLocaleString(),
+            exitTimeStamp: curDate.toLocaleString("en-US"),
             status: "EXITED",
           };
-          const id = idTracker[curDate.toLocaleDateString()];
+          const id = idTracker[curDate.toLocaleDateString("en-US")];
           const patchUrl = baseUrl + "/days/" + id + ".json";
           axios.put(patchUrl, data);
           console.log("EXIT_API", data);
@@ -188,7 +191,8 @@ export default function Home() {
 
     setInDays((prev) =>
       prev.filter(
-        (day) => day.toLocaleDateString() != curDate.toLocaleDateString()
+        (day) =>
+          day.toLocaleDateString("en-US") != curDate.toLocaleDateString("en-US")
       )
     );
     setBookedDays((prev) => [...prev, curDate]);
@@ -213,7 +217,7 @@ export default function Home() {
     setSelected(date);
     //get and set timeStamp for enter and exit based on the date
     const curDayDetails = workedDays.filter(
-      (curDay) => curDay.day == date.toLocaleDateString()
+      (curDay) => curDay.day == date.toLocaleDateString("en-US")
     )[0];
     if (curDayDetails) {
       setIsEnteredIn(!!curDayDetails.enteredTimeStamp);
@@ -234,12 +238,12 @@ export default function Home() {
 
       setWorkedDays((entires) => {
         return entires.map((entry) => {
-          if (entry.day == selected.toLocaleDateString()) {
+          if (entry.day == selected.toLocaleDateString("en-US")) {
             const data = {
               ...entry,
               enteredTimeStamp: time,
             };
-            const id = idTracker[selected.toLocaleDateString()];
+            const id = idTracker[selected.toLocaleDateString("en-US")];
             const patchUrl = baseUrl + "/days/" + id + ".json";
             axios.put(patchUrl, data);
             return data;
@@ -252,12 +256,12 @@ export default function Home() {
       setExitTimeStamp(time);
       setWorkedDays((entires) => {
         return entires.map((entry) => {
-          if (entry.day == selected.toLocaleDateString()) {
+          if (entry.day == selected.toLocaleDateString("en-US")) {
             const data = {
               ...entry,
               exitTimeStamp: time,
             };
-            const id = idTracker[selected.toLocaleDateString()];
+            const id = idTracker[selected.toLocaleDateString("en-US")];
             const patchUrl = baseUrl + "/days/" + id + ".json";
             axios.put(patchUrl, data);
             return data;
