@@ -58,7 +58,7 @@ const EditDrawer = ({ curTime, handleEditTimeStamp, mode }) => {
                           <Button
                             onClick={() =>
                               handleEditTimeStamp(
-                                time.toDate().toLocaleString(),
+                                time.toDate().toLocaleString("en-US"),
                                 mode
                               )
                             }
