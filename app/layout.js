@@ -26,6 +26,9 @@ export default function RootLayout({ children }) {
         name="viewport"
         content="width=device-width, initial-scale=1.0, maxium-scale=1"
       ></meta>
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/vk.svg" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
