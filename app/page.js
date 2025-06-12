@@ -53,6 +53,22 @@ export default function Home() {
   const [minDuration, setMinDuration] = useState("06:00");
 
   useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then((registration) => {
+          console.log(
+            "Service Worker registered with scope:",
+            registration.scope
+          );
+        })
+        .catch((error) => {
+          console.error("Service Worker registration failed:", error);
+        });
+    }
+  }, []);
+
+  useEffect(() => {
     // Load all the entries and set the id tracker for each of the date
     function getTrackIdsForIntialEntries(entires) {
       const curTracker = {};
