@@ -361,6 +361,9 @@ export default function Home() {
     const today = new Date(currentDate).setHours(0, 0, 0, 0);
     return current < today;
   };
+
+  const weekends = () => {};
+
   if (isInitalEntiresLoading) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -429,9 +432,13 @@ export default function Home() {
               {selected && !isEnteredIn && (
                 <p className="text-muted-foreground">
                   {isBeforeToday()
-                    ? isExited
+                    ? dayOfWeek == "Saturday" || dayOfWeek == "Sunday"
+                      ? "Enjoy your weekend"
+                      : isExited
                       ? "You are at office today"
                       : "Already reported on this day? Mark your presence!"
+                    : dayOfWeek == "Saturday" || dayOfWeek == "Sunday"
+                    ? "Enjoy your weekend"
                     : "Ready for Work?"}
                 </p>
               )}
@@ -445,13 +452,16 @@ export default function Home() {
                         {isExited ? "Remove this Entry" : "Mark as Reported"}
                       </Button>
                     ) : (
-                      <Button
-                        className="w-full"
-                        // variant="outline"
-                        onClick={handleEnteredInState}
-                      >
-                        Enter In
-                      </Button>
+                      dayOfWeek != "Saturday" &&
+                      dayOfWeek != "Sunday" && (
+                        <Button
+                          className="w-full"
+                          // variant="outline"
+                          onClick={handleEnteredInState}
+                        >
+                          Enter In
+                        </Button>
+                      )
                     )
                   ) : (
                     <div className="border my-auto rounded-2xl p-3  flex flex-col md:flex-row gap-3 md:justify-between ">
