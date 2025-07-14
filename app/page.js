@@ -503,7 +503,7 @@ export default function Home() {
                         <div className="self-center flex items-center gap-2">
                           {dayjs(exitTimeStamp).format("h:mm A")}
                           <EditDrawer
-                            curTime={enteredTimeStamp}
+                            curTime={exitTimeStamp}
                             handleEditTimeStamp={handleEditTimeStamp}
                             mode={"exit"}
                           />
